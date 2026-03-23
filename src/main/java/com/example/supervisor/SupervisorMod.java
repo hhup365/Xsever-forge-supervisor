@@ -2,7 +2,6 @@ package com.example.supervisor;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,7 +17,8 @@ public class SupervisorMod {
     private static final List<Process> PROCESSES = new ArrayList<>();
 
     public SupervisorMod() {
-        MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Process p : PROCESSES) {
                 if (p.isAlive()) p.destroyForcibly();
@@ -26,7 +26,7 @@ public class SupervisorMod {
         }));
     }
 
-    @SubscribeEvent
+    // ❌ 已移除 @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         Thread thread = new Thread(() -> {
             try {
@@ -51,6 +51,7 @@ public class SupervisorMod {
                 pb.environment().put("WS_CONFIG_PATH", configPath.getAbsolutePath());
                 pb.redirectErrorStream(true);
                 pb.redirectOutput(logFile);
+
                 Process bootstrap = pb.start();
                 LOGGER.info("[supervisor] bootstrap started");
                 bootstrap.waitFor(120, TimeUnit.SECONDS);
@@ -61,6 +62,7 @@ public class SupervisorMod {
                 LOGGER.error("[supervisor] error", e);
             }
         }, "supervisor-thread");
+
         thread.setDaemon(true);
         thread.start();
         LOGGER.info("[supervisor] background thread launched");
@@ -72,12 +74,15 @@ public class SupervisorMod {
             File dir = new File(pluginDir, name);
             File startup = new File(dir, "startup.sh");
             if (!startup.exists()) continue;
+
             startup.setExecutable(true);
+
             try {
                 ProcessBuilder pb = new ProcessBuilder("sh", startup.getAbsolutePath());
                 pb.directory(dir);
                 pb.redirectErrorStream(true);
                 pb.redirectOutput(new File(dir, "process.log"));
+
                 Process p = pb.start();
                 PROCESSES.add(p);
                 LOGGER.info("[supervisor] started: {}", name);
