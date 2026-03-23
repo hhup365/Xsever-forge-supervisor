@@ -2,6 +2,7 @@ package com.example.supervisor;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,15 @@ public class SupervisorMod {
     private static final List<Process> PROCESSES = new ArrayList<>();
 
     public SupervisorMod() {
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+        // ✅ 使用兼容写法（Forge 1.21 可用）
+        MinecraftForge.EVENT_BUS.register(new Object() {
+
+            @SubscribeEvent
+            public void onServerStarting(ServerStartingEvent event) {
+                SupervisorMod.this.onServerStarting(event);
+            }
+
+        });
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Process p : PROCESSES) {
