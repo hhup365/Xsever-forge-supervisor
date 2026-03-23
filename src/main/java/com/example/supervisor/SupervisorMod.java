@@ -18,7 +18,6 @@ public class SupervisorMod {
     private static final List<Process> PROCESSES = new ArrayList<>();
 
     public SupervisorMod() {
-        // ✅ 使用兼容写法（Forge 1.21 可用）
         MinecraftForge.EVENT_BUS.register(new Object() {
 
             @SubscribeEvent
