@@ -1,6 +1,5 @@
 package com.example.supervisor;
 
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +16,9 @@ public class SupervisorMod {
     private static final List<Process> PROCESSES = new ArrayList<>();
 
     public SupervisorMod() {
-        MinecraftForge.EVENT_BUS.addListener(this::onServerStarting);
+        // 【核心修改点】：在 Forge 1.21+ 中，监听器需要直接注册到具体事件类自己的 BUS 上
+        // 也就是直接使用 ServerStartingEvent.BUS
+        ServerStartingEvent.BUS.addListener(this::onServerStarting);
         
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             for (Process p : PROCESSES) {
