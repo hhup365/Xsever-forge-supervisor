@@ -26,7 +26,6 @@ public class SupervisorMod {
         }));
     }
 
-    // ❌ 已移除 @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
         Thread thread = new Thread(() -> {
             try {
